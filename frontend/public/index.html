@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Talk</title>
+    <script>
+        function start() {
+            fetch('/hallo')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('output').innerText = data.message;
+                })
+                .catch(error => console.error('Fehler:', error));
+        }
+    </script>
+</head>
+<body>
+    <button onclick="start()">Start</button>
+    <div id="output"></div>
+</body>
+</html>
