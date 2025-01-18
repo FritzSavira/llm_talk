@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r llm_talk/backend/src/requirements.txt
+        pip install -r /backend/src/requirements.txt
     - name: Lint with flake8
       run: |
         pip install flake8
