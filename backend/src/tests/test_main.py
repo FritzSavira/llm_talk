@@ -1,5 +1,5 @@
 # test_main.py
-from src.main import add
+from backend.src.main import add
 
 
 def test_add():
