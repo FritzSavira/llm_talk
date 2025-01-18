@@ -29,6 +29,8 @@ jobs:
       run: |
         pip install flake8
         flake8 backend/src backend/src/tests
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=${{ github.workspace }}/backend/src" >> $GITHUB_ENV
     - name: Run tests
       run: |
         pip install pytest
