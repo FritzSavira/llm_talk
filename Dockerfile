@@ -25,7 +25,7 @@ COPY frontend/package.json package-lock.json* ./
 RUN npm install
 
 # Kopiere den Rest der Anwendung
-COPY docker .
+COPY . .
 
 # Optional: Build-Schritte für das Frontend (falls verwendet)
 # RUN npm run build

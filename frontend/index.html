@@ -2,20 +2,79 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LLM Talk</title>
-    <script>
-        function start() {
-            fetch('/hallo')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('output').innerText = data.message;
-                })
-                .catch(error => console.error('Fehler:', error));
+    <title>Frage stellen</title>
+    <!-- Optional: Einfache Styling mit CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
         }
-    </script>
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 8px 16px;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
-    <button onclick="start()">Start</button>
-    <div id="output"></div>
+    <h1>Stellen Sie Ihre Frage</h1>
+    <form id="frageForm">
+        <label for="frage">Ihre Frage:</label><br><br>
+        <input type="text" id="frage" name="frage" required>
+        <button type="submit">Senden</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('frageForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Verhindert das Standard-Formular-Absenden
+
+            const frageInput = document.getElementById('frage');
+            const frage = frageInput.value.trim();
+
+            if (frage === "") {
+                alert("Bitte geben Sie eine Frage ein.");
+                return;
+            }
+
+            // AJAX-Anfrage an den Server senden
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ frage: frage }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Netzwerkantwort war nicht ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Erwartet wird eine JSON-Antwort, z.B. { "reply": "Antwort vom Server" }
+                const reply = data.reply || "Keine Antwort erhalten.";
+                document.getElementById('response').innerHTML = "<strong>Antwort:</strong> " + reply;
+                frageInput.value = ""; // Eingabefeld nach dem Senden leeren
+            })
+            .catch((error) => {
+                console.error('Es gab ein Problem mit der Fetch-Operation:', error);
+                document.getElementById('response').innerHTML = "<span style='color: red;'>Fehler beim Senden der Frage.</span>";
+            });
+        });
+    </script>
 </body>
 </html>
