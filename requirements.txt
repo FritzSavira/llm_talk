@@ -1,6 +1,5 @@
 pytest
 flake8
-
 aio_straico==0.1.6
 anyio==4.8.0
 blinker==1.9.0
