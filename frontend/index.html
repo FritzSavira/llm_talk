@@ -55,9 +55,9 @@
                 return;
             }
 
-            // Leere den vorherigen Inhalt und zeige eine Ladeanzeige
+            // Leere den vorherigen Inhalt
             const responseDiv = document.getElementById('response');
-            responseDiv.innerHTML = "<em>Antwort wird generiert...</em>";
+            responseDiv.innerHTML = "";
 
             // AJAX-Anfrage an den Server senden
             fetch('/ask', {
@@ -71,35 +71,42 @@
                 if (!response.ok) {
                     throw new Error('Netzwerkantwort war nicht ok');
                 }
-                return response.json();
-            })
-            .then(data => {
-                // Entferne die Ladeanzeige
-                responseDiv.innerHTML = "";
 
-                // Überprüfe, ob eine Liste von Antworten vorhanden ist
-                if (data.responses && Array.isArray(data.responses)) {
-                    const replies = data.responses;
-                    replies.forEach((reply, index) => {
-                        // Verwende setTimeout, um die Antworten mit Verzögerung anzuzeigen
-                        setTimeout(() => {
-                            const replyElement = document.createElement('div');
-                            replyElement.classList.add('reply');
-                            replyElement.innerHTML = reply;
-                            responseDiv.appendChild(replyElement);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
 
-                            // Optional: Scroll zum neuesten Beitrag
-                            replyElement.scrollIntoView({ behavior: 'smooth' });
-                        }, 1000 * index); // 1 Sekunde Verzögerung zwischen den Antworten
+                function read() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            frageInput.value = ""; // Eingabefeld nach dem Senden leeren
+                            return;
+                        }
+
+                        buffer += decoder.decode(value, {stream: true});
+                        let lines = buffer.split('\n');
+                        buffer = lines.pop(); // Unvollständige Daten für den nächsten Durchlauf speichern
+
+                        for (let line of lines) {
+                            if (line.trim()) {  // Nur nicht-leere Zeilen verarbeiten
+                                try {
+                                    const dataObj = JSON.parse(line);
+                                    const replyElement = document.createElement('div');
+                                    replyElement.classList.add('reply');
+                                    replyElement.innerHTML = dataObj.html;
+                                    responseDiv.appendChild(replyElement);
+                                    replyElement.scrollIntoView({ behavior: 'smooth' });
+                                } catch (e) {
+                                    console.error('Fehler beim Parsen von JSON:', e);
+                                }
+                            }
+                        }
+
+                        return read();
                     });
-                } else if (data.antwort) {
-                    // Fallback: Wenn nur eine einzelne Antwort vorhanden ist
-                    responseDiv.innerHTML = "<strong>Antwort:</strong> " + data.antwort;
-                } else {
-                    responseDiv.innerHTML = "<span style='color: red;'>Unerwartete Antwort vom Server.</span>";
                 }
 
-                frageInput.value = ""; // Eingabefeld nach dem Senden leeren
+                return read();
             })
             .catch((error) => {
                 console.error('Es gab ein Problem mit der Fetch-Operation:', error);
@@ -107,5 +114,8 @@
             });
         });
     </script>
+
+
+
 </body>
 </html>

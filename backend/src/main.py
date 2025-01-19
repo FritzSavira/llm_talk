@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from prompt import prompt_theme_intro, prompt_a, prompt_b
 from aio_straico import straico_client
 import os
@@ -61,10 +61,6 @@ def convert_markdown_to_html(markdown_text):
     return clean_html
 
 
-import os
-import json
-
-
 def log_to_json(file_path, quest, disc_stream):
     """
     Speichert die Frage und die Diskussion in einer JSON-Datei.
@@ -104,49 +100,44 @@ def index():
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    """
-    Verarbeitung der AJAX-Anfrage zur Beantwortung einer Frage.
-    """
     data = request.get_json()
     frage = data.get('frage', '')
     disc_stream = ""
-    responses = []
 
     if frage:
         print("frage:", frage)
 
-        # Generiere das Diskussionsthema
-        reply_theme_intro = generate_theme_intro(frage)
-        reply_theme_intro_md = "#### Diskussionsthema: " + reply_theme_intro['completion']['choices'][0]['message'][
-            'content']
-        reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
-        disc_stream += reply_theme_intro_md
-        responses.append(reply_theme_intro_html)
-        print("reply_theme_intro_md: ", reply_theme_intro_md)
+        def generate():
+            nonlocal disc_stream  # Erlaubt die Modifikation von disc_stream innerhalb der Funktion
 
-        # Generiere Antwort A
-        reply_a = generate_reply_a(disc_stream)
-        reply_a_md = "#### Beitrag bibeltreu: " + reply_a['completion']['choices'][0]['message']['content']
-        reply_a_html = convert_markdown_to_html(reply_a_md)
-        disc_stream += reply_a_md
-        responses.append(reply_a_html)
-        print("reply_a_md:", reply_a_md)
+            # Generiere das Diskussionsthema
+            reply_theme_intro = generate_theme_intro(frage)
+            reply_theme_intro_md = "#### Diskussionsthema: " + reply_theme_intro['completion']['choices'][0]['message']['content']
+            reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
+            yield json.dumps({'html': reply_theme_intro_html}) + '\n'
+            disc_stream += reply_theme_intro_md
+            print("reply_theme_intro_md: ", reply_theme_intro_md)
 
-        # Generiere Antwort B
-        reply_b = generate_reply_b(disc_stream)
-        reply_b_md = "#### Beitrag historisch-kritisch: " + reply_b['completion']['choices'][0]['message']['content']
-        reply_b_html = convert_markdown_to_html(reply_b_md)
-        disc_stream += reply_b_md
-        responses.append(reply_b_html)
-        print("reply_b_md:", reply_b_md)
+            # Generiere Antwort A
+            reply_a = generate_reply_a(disc_stream)
+            reply_a_md = "#### Beitrag bibeltreu: " + reply_a['completion']['choices'][0]['message']['content']
+            reply_a_html = convert_markdown_to_html(reply_a_md)
+            yield json.dumps({'html': reply_a_html}) + '\n'
+            disc_stream += reply_a_md
+            print("reply_a_md:", reply_a_md)
 
-        # Logge die Daten (optional kannst du hier die Markdown- oder HTML-Antwort loggen)
-        log_to_json('../../log/llm_talk_log.json', frage, disc_stream)
+            # Generiere Antwort B
+            reply_b = generate_reply_b(disc_stream)
+            reply_b_md = "#### Beitrag historisch-kritisch: " + reply_b['completion']['choices'][0]['message']['content']
+            reply_b_html = convert_markdown_to_html(reply_b_md)
+            yield json.dumps({'html': reply_b_html}) + '\n'
+            disc_stream += reply_b_md
+            print("reply_b_md:", reply_b_md)
 
-        # Rückgabe der Antworten als Liste
-        return jsonify({
-            'responses': responses
-        })
+            # Logge die Daten
+            log_to_json('../../log/llm_talk_log.json', frage, disc_stream)
+
+        return Response(generate(), mimetype='text/plain')
 
     return jsonify({'antwort': 'Keine Frage gestellt.'}), 400
 
