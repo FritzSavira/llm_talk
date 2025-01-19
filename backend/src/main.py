@@ -30,23 +30,23 @@ def generate_theme_intro(frage):
         return reply_theme_intro
 
 
-def generate_reply_a(diss_stream_md):
+def generate_reply_a(disc_stream_md):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
     """
     llm_a = 'openai/gpt-4o-2024-08-06'
     with straico_client(API_KEY=straico_api_key) as client:
-        reply_a = client.prompt_completion(llm_a, diss_stream_md + prompt_a)
+        reply_a = client.prompt_completion(llm_a, disc_stream_md + prompt_a)
         return reply_a
 
 
-def generate_reply_b(diss_stream_md):
+def generate_reply_b(disc_stream_md):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
     """
     llm_b = 'openai/gpt-4o-2024-08-06'
     with straico_client(API_KEY=straico_api_key) as client:
-        reply_b = client.prompt_completion(llm_b, diss_stream_md + prompt_b)
+        reply_b = client.prompt_completion(llm_b, disc_stream_md + prompt_b)
         return reply_b
 
 
@@ -110,32 +110,46 @@ def ask():
         def generate():
             nonlocal disc_stream  # Erlaubt die Modifikation von disc_stream innerhalb der Funktion
 
-            # Generiere das Diskussionsthema
-            reply_theme_intro = generate_theme_intro(frage)
-            reply_theme_intro_md = "#### Diskussionsthema: " + reply_theme_intro['completion']['choices'][0]['message']['content']
-            reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
-            yield json.dumps({'html': reply_theme_intro_html}) + '\n'
-            disc_stream += reply_theme_intro_md
-            print("reply_theme_intro_md: ", reply_theme_intro_md)
+            try:
+                # Generiere das Diskussionsthema
+                reply_theme_intro = generate_theme_intro(frage)
+                reply_theme_intro_md = "#### Diskussionsthema: " + reply_theme_intro['completion']['choices'][0]['message']['content']
+                reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
+                yield json.dumps({'html': reply_theme_intro_html}) + '\n'
+                disc_stream += reply_theme_intro_md
+                print("reply_theme_intro_md: ", reply_theme_intro_md)
 
-            # Generiere Antwort A
-            reply_a = generate_reply_a(disc_stream)
-            reply_a_md = "#### Beitrag bibeltreu: " + reply_a['completion']['choices'][0]['message']['content']
-            reply_a_html = convert_markdown_to_html(reply_a_md)
-            yield json.dumps({'html': reply_a_html}) + '\n'
-            disc_stream += reply_a_md
-            print("reply_a_md:", reply_a_md)
+                # Initialisiere den Abwechselungsindikator
+                is_a_turn = True
 
-            # Generiere Antwort B
-            reply_b = generate_reply_b(disc_stream)
-            reply_b_md = "#### Beitrag historisch-kritisch: " + reply_b['completion']['choices'][0]['message']['content']
-            reply_b_html = convert_markdown_to_html(reply_b_md)
-            yield json.dumps({'html': reply_b_html}) + '\n'
-            disc_stream += reply_b_md
-            print("reply_b_md:", reply_b_md)
+                # Endlosschleife für abwechselnde Antworten
+                while True:
+                    if is_a_turn:
+                        # Generiere Antwort A
+                        reply_a = generate_reply_a(disc_stream)
+                        reply_a_md = "#### Beitrag bibeltreu: " + reply_a['completion']['choices'][0]['message']['content']
+                        reply_a_html = convert_markdown_to_html(reply_a_md)
+                        yield json.dumps({'html': reply_a_html}) + '\n'
+                        disc_stream += reply_a_md
+                        print("reply_a_md:", reply_a_md)
+                    else:
+                        # Generiere Antwort B
+                        reply_b = generate_reply_b(disc_stream)
+                        reply_b_md = "#### Beitrag historisch-kritisch: " + reply_b['completion']['choices'][0]['message']['content']
+                        reply_b_html = convert_markdown_to_html(reply_b_md)
+                        yield json.dumps({'html': reply_b_html}) + '\n'
+                        disc_stream += reply_b_md
+                        print("reply_b_md:", reply_b_md)
 
-            # Logge die Daten
-            log_to_json('../../log/llm_talk_log.json', frage, disc_stream)
+                    # Wechsle die Runde
+                    is_a_turn = not is_a_turn
+
+            except GeneratorExit:
+                # Handle the client disconnecting
+                print("Client hat die Verbindung getrennt.")
+            finally:
+                # Logge die Daten, wenn die Schleife endet
+                log_to_json('../../log/llm_talk_log.json', frage, disc_stream)
 
         return Response(generate(), mimetype='text/plain')
 
