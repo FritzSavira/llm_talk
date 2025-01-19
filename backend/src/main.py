@@ -71,9 +71,13 @@ def convert_markdown_to_html(markdown_text):
     clean_html = bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
     return clean_html
 
+import os
+import json
+
 def log_to_json(file_path, quest, disc_stream):
     """
     Speichert die Frage und die Diskussion in einer JSON-Datei.
+    Erstellt den Pfad oder die Datei, falls diese nicht existieren.
 
     :param file_path: Pfad zur JSON-Datei
     :param quest: Die gestellte Frage
@@ -83,6 +87,14 @@ def log_to_json(file_path, quest, disc_stream):
         "question": quest,
         "discussion": disc_stream,
     }
+
+    # Extrahiere das Verzeichnis aus dem file_path
+    directory = os.path.dirname(file_path)
+
+    # Erstelle das Verzeichnis, falls es nicht existiert
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
@@ -133,12 +145,12 @@ def ask():
         print()
         print("reply_b_md:", reply_b_md)
 
-        '''
-       return jsonify({'antwort': antwort_html, 'antwort_markdown': antwort_markdown, 'frage': frage})
-       '''
+
+        return jsonify({xxxx:yyyy})
+
         
         # Logge die Daten (optional kannst du hier die Markdown- oder HTML-Antwort loggen)
-        log_to_json('/log/llm_talk_log.json', frage, disc_stream)
+        log_to_json('../../log/llm_talk_log.json', frage, disc_stream)
     
     return jsonify({'antwort': 'Keine Frage gestellt.'}), 400
 
