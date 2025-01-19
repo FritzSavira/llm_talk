@@ -25,6 +25,11 @@
             padding: 10px;
             border: 1px solid #ddd;
             background-color: #f9f9f9;
+            max-width: 600px;
+            word-wrap: break-word;
+        }
+        .reply {
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -50,6 +55,10 @@
                 return;
             }
 
+            // Leere den vorherigen Inhalt und zeige eine Ladeanzeige
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = "<em>Antwort wird generiert...</em>";
+
             // AJAX-Anfrage an den Server senden
             fetch('/ask', {
                 method: 'POST',
@@ -65,14 +74,36 @@
                 return response.json();
             })
             .then(data => {
-                // Erwartet wird eine JSON-Antwort, z.B. { "reply": "Antwort vom Server" }
-                const reply = data.reply || "Keine Antwort erhalten.";
-                document.getElementById('response').innerHTML = "<strong>Antwort:</strong> " + reply;
+                // Entferne die Ladeanzeige
+                responseDiv.innerHTML = "";
+
+                // Überprüfe, ob eine Liste von Antworten vorhanden ist
+                if (data.responses && Array.isArray(data.responses)) {
+                    const replies = data.responses;
+                    replies.forEach((reply, index) => {
+                        // Verwende setTimeout, um die Antworten mit Verzögerung anzuzeigen
+                        setTimeout(() => {
+                            const replyElement = document.createElement('div');
+                            replyElement.classList.add('reply');
+                            replyElement.innerHTML = reply;
+                            responseDiv.appendChild(replyElement);
+
+                            // Optional: Scroll zum neuesten Beitrag
+                            replyElement.scrollIntoView({ behavior: 'smooth' });
+                        }, 1000 * index); // 1 Sekunde Verzögerung zwischen den Antworten
+                    });
+                } else if (data.antwort) {
+                    // Fallback: Wenn nur eine einzelne Antwort vorhanden ist
+                    responseDiv.innerHTML = "<strong>Antwort:</strong> " + data.antwort;
+                } else {
+                    responseDiv.innerHTML = "<span style='color: red;'>Unerwartete Antwort vom Server.</span>";
+                }
+
                 frageInput.value = ""; // Eingabefeld nach dem Senden leeren
             })
             .catch((error) => {
                 console.error('Es gab ein Problem mit der Fetch-Operation:', error);
-                document.getElementById('response').innerHTML = "<span style='color: red;'>Fehler beim Senden der Frage.</span>";
+                responseDiv.innerHTML = "<span style='color: red;'>Fehler beim Senden der Frage.</span>";
             });
         });
     </script>
