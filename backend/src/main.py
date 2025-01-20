@@ -122,8 +122,11 @@ def ask():
                 # Initialisiere den Abwechselungsindikator
                 is_a_turn = True
 
-                # Endlosschleife für abwechselnde Antworten
-                while True:
+                # Schleife für abwechselnde Antworten
+                max_iterations = 3
+                iteration = 0
+
+                while iteration < max_iterations:
                     if is_a_turn:
                         # Generiere Antwort A
                         reply_a = generate_reply_a(disc_stream)
@@ -143,6 +146,7 @@ def ask():
 
                     # Wechsle die Runde
                     is_a_turn = not is_a_turn
+                    iteration += 1
 
             except GeneratorExit:
                 # Handle the client disconnecting
