@@ -132,7 +132,6 @@ def ask():
                 if "mögen berufenere sich des themas annehmen." in reply_theme_intro_md.lower():
                     return
                 disc_stream += reply_theme_intro_md
-                print("reply_theme_intro_md: ", reply_theme_intro_md)
 
                 # Initialisiere den Abwechselungsindikator
                 is_a_turn = True
@@ -153,8 +152,7 @@ def ask():
                         yield json.dumps({'html': reply_a_html}) + '\n'
                         yield json.dumps({'html': reply_tag_html}) + '\n'
                         disc_stream += reply_a_md
-                        print("reply_a_md:", reply_a_md)
-                        print("reply_tag_md: ", reply_tag_md)
+
                     else:
                         # Generiere Antwort B
                         reply_b = generate_reply_b(disc_stream)
@@ -166,8 +164,6 @@ def ask():
                         yield json.dumps({'html': reply_b_html}) + '\n'
                         yield json.dumps({'html': reply_tag_html}) + '\n'
                         disc_stream += reply_b_md
-                        print("reply_b_md:", reply_b_md)
-                        print("reply_tag_md: ", reply_tag_md)
 
                     # Wechsle die Runde
                     is_a_turn = not is_a_turn
