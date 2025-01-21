@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, Response
-from prompt import prompt_theme_intro, prompt_a, prompt_b
+from prompt import prompt_theme_intro, prompt_a, prompt_b, prompt_tag
 from aio_straico import straico_client
 import os
 import json
@@ -34,7 +34,7 @@ def generate_reply_a(disc_stream_md):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
     """
-    llm_a = 'openai/gpt-4o-2024-08-06'
+    llm_a = 'openai/o1-preview'
     with straico_client(API_KEY=straico_api_key) as client:
         reply_a = client.prompt_completion(llm_a, disc_stream_md + prompt_a)
         return reply_a
@@ -44,10 +44,19 @@ def generate_reply_b(disc_stream_md):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
     """
-    llm_b = 'openai/gpt-4o-2024-08-06'
+    llm_b = 'openai/o1-preview'
     with straico_client(API_KEY=straico_api_key) as client:
         reply_b = client.prompt_completion(llm_b, disc_stream_md + prompt_b)
         return reply_b
+
+def generate_reply_tag(reply_md):
+    """
+    Findet Tags für die Antwort unter Verwendung des Sprachmodells.
+    """
+    llm_tag = 'openai/gpt-4o-2024-08-06'
+    with straico_client(API_KEY=straico_api_key) as client:
+        reply_tag = client.prompt_completion(llm_tag, prompt_tag + reply_md)
+        return reply_tag
 
 
 def convert_markdown_to_html(markdown_text):
@@ -113,9 +122,15 @@ def ask():
             try:
                 # Generiere das Diskussionsthema
                 reply_theme_intro = generate_theme_intro(frage)
-                reply_theme_intro_md = "#### Diskussionsthema: " + reply_theme_intro['completion']['choices'][0]['message']['content']
+                reply_theme_intro_md = reply_theme_intro['completion']['choices'][0]['message']['content']
                 reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
+                reply_tag = generate_reply_tag(reply_theme_intro_md)
+                reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
+                reply_tag_html = convert_markdown_to_html(reply_tag_md)
                 yield json.dumps({'html': reply_theme_intro_html}) + '\n'
+                yield json.dumps({'html': reply_tag_html}) + '\n'
+                if "mögen berufenere sich des themas annehmen." in reply_theme_intro_md.lower():
+                    return
                 disc_stream += reply_theme_intro_md
                 print("reply_theme_intro_md: ", reply_theme_intro_md)
 
@@ -123,26 +138,36 @@ def ask():
                 is_a_turn = True
 
                 # Schleife für abwechselnde Antworten
-                max_iterations = 3
+                max_iterations = 4
                 iteration = 0
 
                 while iteration < max_iterations:
                     if is_a_turn:
                         # Generiere Antwort A
                         reply_a = generate_reply_a(disc_stream)
-                        reply_a_md = "#### Beitrag bibeltreu: " + reply_a['completion']['choices'][0]['message']['content']
+                        reply_a_md = "#### Beitrag bibeltreu: " + "\n" + reply_a['completion']['choices'][0]['message']['content']
                         reply_a_html = convert_markdown_to_html(reply_a_md)
+                        reply_tag = generate_reply_tag(reply_a_md)
+                        reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
+                        reply_tag_html = convert_markdown_to_html(reply_tag_md)
                         yield json.dumps({'html': reply_a_html}) + '\n'
+                        yield json.dumps({'html': reply_tag_html}) + '\n'
                         disc_stream += reply_a_md
                         print("reply_a_md:", reply_a_md)
+                        print("reply_tag_md: ", reply_tag_md)
                     else:
                         # Generiere Antwort B
                         reply_b = generate_reply_b(disc_stream)
-                        reply_b_md = "#### Beitrag historisch-kritisch: " + reply_b['completion']['choices'][0]['message']['content']
+                        reply_b_md = "#### Beitrag historisch-kritisch: " + "\n" + reply_b['completion']['choices'][0]['message']['content']
                         reply_b_html = convert_markdown_to_html(reply_b_md)
+                        reply_tag = generate_reply_tag(reply_b_md)
+                        reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
+                        reply_tag_html = convert_markdown_to_html(reply_tag_md)
                         yield json.dumps({'html': reply_b_html}) + '\n'
+                        yield json.dumps({'html': reply_tag_html}) + '\n'
                         disc_stream += reply_b_md
                         print("reply_b_md:", reply_b_md)
+                        print("reply_tag_md: ", reply_tag_md)
 
                     # Wechsle die Runde
                     is_a_turn = not is_a_turn
