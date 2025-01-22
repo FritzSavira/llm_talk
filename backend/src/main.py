@@ -125,7 +125,7 @@ def ask():
                 reply_theme_intro_md = reply_theme_intro['completion']['choices'][0]['message']['content']
                 reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
                 reply_tag = generate_reply_tag(reply_theme_intro_md)
-                reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
+                reply_tag_md = reply_tag['completion']['choices'][0]['message']['content']
                 reply_tag_html = convert_markdown_to_html(reply_tag_md)
                 yield json.dumps({'html': reply_theme_intro_html}) + '\n'
                 yield json.dumps({'html': reply_tag_html}) + '\n'
