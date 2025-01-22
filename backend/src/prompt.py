@@ -14,7 +14,9 @@ Beginne mit: #### Diskussionsthema
 '''
 
 
-
+persona_a = '''
+bibeltreu
+'''
 prompt_a = '''
 Du bist ein erfahrener Bibellehrer an einer renommierten evangelikal theologischen Universität.
 Du hast umfassende Erfahrung in der Auslegung der Bibel und in der Beantwortung von Fragen dazu.
@@ -42,6 +44,9 @@ Gehe auf den letzten vorhergehenden Diskussionsbeitrag deines Vorredners ein,
 aber ziehe ebenso die früheren Diskussionsbeiträge zur Argumentation in Betracht.
 '''
 
+persona_b = '''
+historisch-kritisch
+'''
 prompt_b = '''
 Du bist ein erfahrener Theologieprofessor an einer renommierten Universität mit einem Schwerpunkt
 auf liberalen und historisch-kritischen Ansätzen. Du verfügst über umfassende Erfahrung in der Auslegung

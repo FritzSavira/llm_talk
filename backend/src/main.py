@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request, jsonify, Response
-from prompt import prompt_theme_intro, prompt_a, prompt_b, prompt_tag
+from prompt import prompt_theme_intro, persona_a, prompt_a, persona_b, prompt_b, prompt_tag
 from aio_straico import straico_client
 import os
 import json
 import markdown
 import bleach
+import time
+import random
+
+
 
 app = Flask(__name__, static_folder='static', template_folder='../../frontend')
 straico_api_key = os.getenv('STRAICO_API_KEY')
@@ -70,12 +74,13 @@ def convert_markdown_to_html(markdown_text):
     return clean_html
 
 
-def log_to_json(file_path, quest, disc_stream):
+def log_to_json(file_path, id, quest, disc_stream):
     """
     Speichert die Frage und die Diskussion in einer JSON-Datei.
     Erstellt den Pfad oder die Datei, falls diese nicht existieren.
     """
     log_entry = {
+        "id": id,
         "question": quest,
         "discussion": disc_stream,
     }
@@ -99,6 +104,13 @@ def log_to_json(file_path, quest, disc_stream):
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
+def generate_unique_id():
+    timestamp = int(time.time())
+    random_part = random.randint(1000, 9999)
+    return f"{timestamp}_{random_part}"
+
+
+
 @app.route('/', methods=['GET'])
 def index():
     """
@@ -112,9 +124,10 @@ def ask():
     data = request.get_json()
     frage = data.get('frage', '')
     disc_stream = ""
+    id = generate_unique_id()
+
 
     if frage:
-        print("frage:", frage)
 
         def generate():
             nonlocal disc_stream  # Erlaubt die Modifikation von disc_stream innerhalb der Funktion
@@ -124,14 +137,30 @@ def ask():
                 reply_theme_intro = generate_theme_intro(frage)
                 reply_theme_intro_md = reply_theme_intro['completion']['choices'][0]['message']['content']
                 reply_theme_intro_html = convert_markdown_to_html(reply_theme_intro_md)
+
+                # Generiere Parameter zum Diskussionsthema
+                reply_theme_intro_model = reply_theme_intro['completion']['model']
+                reply_theme_intro_price = reply_theme_intro['price']
+                reply_theme_intro_words = reply_theme_intro['words']
+
+                # Generiere Tags zum Diskussionsthema
                 reply_tag = generate_reply_tag(reply_theme_intro_md)
                 reply_tag_md = reply_tag['completion']['choices'][0]['message']['content']
                 reply_tag_html = convert_markdown_to_html(reply_tag_md)
+
+                # Generiere Parameter zu den Tags des Diskussionsthemas
+                reply_theme_intro_tag_model = reply_tag['completion']['model']
+                reply_theme_intro_tag_price = reply_tag['price']
+                reply_theme_intro_tag_words = reply_tag['words']
+
                 yield json.dumps({'html': reply_theme_intro_html}) + '\n'
                 yield json.dumps({'html': reply_tag_html}) + '\n'
+
                 if "mögen berufenere sich des themas annehmen." in reply_theme_intro_md.lower():
                     return
+
                 disc_stream += reply_theme_intro_md
+
 
                 # Initialisiere den Abwechselungsindikator
                 is_a_turn = True
@@ -146,9 +175,21 @@ def ask():
                         reply_a = generate_reply_a(disc_stream)
                         reply_a_md = "#### Beitrag bibeltreu: " + "\n" + reply_a['completion']['choices'][0]['message']['content']
                         reply_a_html = convert_markdown_to_html(reply_a_md)
+
+                        # Generiere Parameter zu der Antwort A
+                        reply_a_model = reply_a['completion']['model']
+                        reply_a_price = reply_a['price']
+                        reply_a_words = reply_a['words']
+
                         reply_tag = generate_reply_tag(reply_a_md)
                         reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
                         reply_tag_html = convert_markdown_to_html(reply_tag_md)
+
+                        # Generiere Parameter zu den Tags der Antwort A
+                        reply_a_tag_model = reply_tag['completion']['model']
+                        reply_a_tag_price = reply_tag['price']
+                        reply_a_tag_words = reply_tag['words']
+
                         yield json.dumps({'html': reply_a_html}) + '\n'
                         yield json.dumps({'html': reply_tag_html}) + '\n'
                         disc_stream += reply_a_md
@@ -158,9 +199,23 @@ def ask():
                         reply_b = generate_reply_b(disc_stream)
                         reply_b_md = "#### Beitrag historisch-kritisch: " + "\n" + reply_b['completion']['choices'][0]['message']['content']
                         reply_b_html = convert_markdown_to_html(reply_b_md)
+
+                        # Generiere Parameter zu der Antwort B
+                        reply_b_model = reply_b['completion']['model']
+                        reply_b_created = reply_b['completion']['created']
+                        reply_b_price = reply_b['price']
+                        reply_b_words = reply_b['words']
+
                         reply_tag = generate_reply_tag(reply_b_md)
                         reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
                         reply_tag_html = convert_markdown_to_html(reply_tag_md)
+
+                        # Generiere Parameter zu den Tags der Antwort B
+                        reply_b_tag_model = reply_tag['completion']['model']
+                        reply_b_tag_created = reply_tag['completion']['created']
+                        reply_b_tag_price = reply_tag['price']
+                        reply_b_tag_words = reply_tag['words']
+
                         yield json.dumps({'html': reply_b_html}) + '\n'
                         yield json.dumps({'html': reply_tag_html}) + '\n'
                         disc_stream += reply_b_md
@@ -174,7 +229,7 @@ def ask():
                 print("Client hat die Verbindung getrennt.")
             finally:
                 # Logge die Daten, wenn die Schleife endet
-                log_to_json('../../log/llm_talk_log.json', frage, disc_stream)
+                log_to_json('../../log/llm_talk_log.json', id, frage, disc_stream)
 
         return Response(generate(), mimetype='text/plain')
 
