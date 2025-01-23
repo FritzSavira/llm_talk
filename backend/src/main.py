@@ -131,7 +131,7 @@ def ask():
     frage = data.get('frage', '')
     disc_stream = ""
     id = generate_unique_id()
-    print("id:", id)
+    log_file = '../../log/llm_talk_log.json'
 
 
     if frage:
@@ -146,7 +146,7 @@ def ask():
                     "type": "theme",
                     "content": frage
                 }
-                update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                update_log_json(log_file, id, data_dict)
 
 
                 # Generiere das Diskussionsthema
@@ -167,7 +167,7 @@ def ask():
                     "price": reply_theme_intro_price,
                     "words": reply_theme_intro_words
                 }
-                update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                update_log_json(log_file, id, data_dict)
 
                 # Generiere Tags zum Diskussionsthema
                 reply_theme_intro_tag = generate_reply_tag(reply_theme_intro_md)
@@ -187,7 +187,7 @@ def ask():
                     "price": reply_theme_intro_tag_price,
                     "words": reply_theme_intro_tag_words
                 }
-                update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                update_log_json(log_file, id, data_dict)
 
                 yield json.dumps({'html': reply_theme_intro_html}) + '\n'
                 yield json.dumps({'html': reply_theme_intro_tag_html}) + '\n'
@@ -225,7 +225,7 @@ def ask():
                             "price": reply_a_price,
                             "words": reply_a_words
                         }
-                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                        update_log_json(log_file, id, data_dict)
 
                         reply_a_tag = generate_reply_tag(reply_a_md)
                         reply_a_tag_md = "*Tags: *" + reply_a_tag['completion']['choices'][0]['message']['content']
@@ -244,7 +244,7 @@ def ask():
                             "price": reply_a_tag_price,
                             "words": reply_a_tag_words
                         }
-                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                        update_log_json(log_file, id, data_dict)
 
                         yield json.dumps({'html': reply_a_html}) + '\n'
                         yield json.dumps({'html': reply_a_tag_html}) + '\n'
@@ -269,7 +269,7 @@ def ask():
                             "price": reply_b_price,
                             "words": reply_b_words
                         }
-                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                        update_log_json(log_file, id, data_dict)
 
                         reply_b_tag = generate_reply_tag(reply_b_md)
                         reply_b_tag_md = "*Tags: *" + reply_b_tag['completion']['choices'][0]['message']['content']
@@ -288,7 +288,7 @@ def ask():
                             "price": reply_b_tag_price,
                             "words": reply_b_tag_words
                         }
-                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
+                        update_log_json(log_file, id, data_dict)
 
                         yield json.dumps({'html': reply_b_html}) + '\n'
                         yield json.dumps({'html': reply_b_tag_html}) + '\n'
