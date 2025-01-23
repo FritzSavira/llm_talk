@@ -38,7 +38,7 @@ def generate_reply_a(disc_stream_md):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
     """
-    llm_a = 'openai/o1-preview'
+    llm_a = 'openai/gpt-4o-2024-08-06'
     with straico_client(API_KEY=straico_api_key) as client:
         reply_a = client.prompt_completion(llm_a, disc_stream_md + prompt_a)
         return reply_a
@@ -48,7 +48,7 @@ def generate_reply_b(disc_stream_md):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
     """
-    llm_b = 'openai/o1-preview'
+    llm_b = 'openai/gpt-4o-2024-08-06'
     with straico_client(API_KEY=straico_api_key) as client:
         reply_b = client.prompt_completion(llm_b, disc_stream_md + prompt_b)
         return reply_b
@@ -173,7 +173,7 @@ def ask():
                     if is_a_turn:
                         # Generiere Antwort A
                         reply_a = generate_reply_a(disc_stream)
-                        reply_a_md = "#### Beitrag bibeltreu: " + "\n" + reply_a['completion']['choices'][0]['message']['content']
+                        reply_a_md = persona_a + "\n" + reply_a['completion']['choices'][0]['message']['content']
                         reply_a_html = convert_markdown_to_html(reply_a_md)
 
                         # Generiere Parameter zu der Antwort A
@@ -197,7 +197,7 @@ def ask():
                     else:
                         # Generiere Antwort B
                         reply_b = generate_reply_b(disc_stream)
-                        reply_b_md = "#### Beitrag historisch-kritisch: " + "\n" + reply_b['completion']['choices'][0]['message']['content']
+                        reply_b_md = persona_b + "\n" + reply_b['completion']['choices'][0]['message']['content']
                         reply_b_html = convert_markdown_to_html(reply_b_md)
 
                         # Generiere Parameter zu der Antwort B

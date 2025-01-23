@@ -15,7 +15,7 @@ Beginne mit: #### Diskussionsthema
 
 
 persona_a = '''
-bibeltreu
+#### bibeltreu
 '''
 prompt_a = '''
 Du bist ein erfahrener Bibellehrer an einer renommierten evangelikal theologischen Universität.
@@ -45,7 +45,7 @@ aber ziehe ebenso die früheren Diskussionsbeiträge zur Argumentation in Betrac
 '''
 
 persona_b = '''
-historisch-kritisch
+#### historisch-kritisch
 '''
 prompt_b = '''
 Du bist ein erfahrener Theologieprofessor an einer renommierten Universität mit einem Schwerpunkt
