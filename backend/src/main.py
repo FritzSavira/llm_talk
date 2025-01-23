@@ -23,7 +23,6 @@ ALLOWED_ATTRIBUTES = {
     'img': ['src', 'alt', 'title'],
 }
 
-
 def generate_theme_intro(frage):
     """
     Generiert eine Antwort auf die gegebene Frage unter Verwendung des Sprachmodells.
@@ -181,6 +180,7 @@ def ask():
                         reply_a_price = reply_a['price']
                         reply_a_words = reply_a['words']
 
+                        # Generiere Tags der Antwort A
                         reply_tag = generate_reply_tag(reply_a_md)
                         reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
                         reply_tag_html = convert_markdown_to_html(reply_tag_md)
@@ -202,7 +202,6 @@ def ask():
 
                         # Generiere Parameter zu der Antwort B
                         reply_b_model = reply_b['completion']['model']
-                        reply_b_created = reply_b['completion']['created']
                         reply_b_price = reply_b['price']
                         reply_b_words = reply_b['words']
 
@@ -212,7 +211,6 @@ def ask():
 
                         # Generiere Parameter zu den Tags der Antwort B
                         reply_b_tag_model = reply_tag['completion']['model']
-                        reply_b_tag_created = reply_tag['completion']['created']
                         reply_b_tag_price = reply_tag['price']
                         reply_b_tag_words = reply_tag['words']
 
