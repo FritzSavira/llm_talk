@@ -73,17 +73,12 @@ def convert_markdown_to_html(markdown_text):
     return clean_html
 
 
-def log_to_json(file_path, id, quest, disc_stream):
+def update_log_json(file_path, id, data_dict):
     """
-    Speichert die Frage und die Diskussion in einer JSON-Datei.
-    Erstellt den Pfad oder die Datei, falls diese nicht existieren.
+    Aktualisiert die JSON-Datei mit neuen Daten für die gegebene id.
+    Wenn ein Eintrag mit der id existiert, füge die neuen Daten hinzu.
+    Andernfalls erstelle einen neuen Eintrag.
     """
-    log_entry = {
-        "id": id,
-        "question": quest,
-        "discussion": disc_stream,
-    }
-
     # Extrahiere das Verzeichnis aus dem file_path
     directory = os.path.dirname(file_path)
 
@@ -97,7 +92,19 @@ def log_to_json(file_path, id, quest, disc_stream):
     except FileNotFoundError:
         data = []
 
-    data.append(log_entry)
+    # Suche nach einer vorhandenen Eintragung mit der gleichen id
+    existing_entry = next((item for item in data if item['id'] == id), None)
+
+    if existing_entry:
+        # Füge die neuen Daten hinzu
+        existing_entry['entries'].append(data_dict)
+    else:
+        # Erstelle eine neue Eintragung
+        new_entry = {
+            "id": id,
+            "entries": [data_dict]
+        }
+        data.append(new_entry)
 
     with open(file_path, 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
@@ -124,6 +131,7 @@ def ask():
     frage = data.get('frage', '')
     disc_stream = ""
     id = generate_unique_id()
+    print("id:", id)
 
 
     if frage:
@@ -132,6 +140,15 @@ def ask():
             nonlocal disc_stream  # Erlaubt die Modifikation von disc_stream innerhalb der Funktion
 
             try:
+
+                # Erzeuge Log_Datensatz
+                data_dict = {
+                    "type": "theme",
+                    "content": frage
+                }
+                update_log_json('../../log/llm_talk_log.json', id, data_dict)
+
+
                 # Generiere das Diskussionsthema
                 reply_theme_intro = generate_theme_intro(frage)
                 reply_theme_intro_md = reply_theme_intro['completion']['choices'][0]['message']['content']
@@ -142,18 +159,38 @@ def ask():
                 reply_theme_intro_price = reply_theme_intro['price']
                 reply_theme_intro_words = reply_theme_intro['words']
 
+                # Logge die Daten
+                data_dict = {
+                    "type": "theme_intro",
+                    "content": reply_theme_intro_md,
+                    "model": reply_theme_intro_model,
+                    "price": reply_theme_intro_price,
+                    "words": reply_theme_intro_words
+                }
+                update_log_json('../../log/llm_talk_log.json', id, data_dict)
+
                 # Generiere Tags zum Diskussionsthema
-                reply_tag = generate_reply_tag(reply_theme_intro_md)
-                reply_tag_md = reply_tag['completion']['choices'][0]['message']['content']
-                reply_tag_html = convert_markdown_to_html(reply_tag_md)
+                reply_theme_intro_tag = generate_reply_tag(reply_theme_intro_md)
+                reply_theme_intro_tag_md = reply_theme_intro_tag['completion']['choices'][0]['message']['content']
+                reply_theme_intro_tag_html = convert_markdown_to_html(reply_theme_intro_tag_md)
 
                 # Generiere Parameter zu den Tags des Diskussionsthemas
-                reply_theme_intro_tag_model = reply_tag['completion']['model']
-                reply_theme_intro_tag_price = reply_tag['price']
-                reply_theme_intro_tag_words = reply_tag['words']
+                reply_theme_intro_tag_model = reply_theme_intro_tag['completion']['model']
+                reply_theme_intro_tag_price = reply_theme_intro_tag['price']
+                reply_theme_intro_tag_words = reply_theme_intro_tag['words']
+
+                # Logge die Daten
+                data_dict = {
+                    "type": "theme_intro_tags",
+                    "content": reply_theme_intro_tag_md,
+                    "model": reply_theme_intro_tag_model,
+                    "price": reply_theme_intro_tag_price,
+                    "words": reply_theme_intro_tag_words
+                }
+                update_log_json('../../log/llm_talk_log.json', id, data_dict)
 
                 yield json.dumps({'html': reply_theme_intro_html}) + '\n'
-                yield json.dumps({'html': reply_tag_html}) + '\n'
+                yield json.dumps({'html': reply_theme_intro_tag_html}) + '\n'
 
                 if "mögen berufenere sich des themas annehmen." in reply_theme_intro_md.lower():
                     return
@@ -180,18 +217,37 @@ def ask():
                         reply_a_price = reply_a['price']
                         reply_a_words = reply_a['words']
 
-                        # Generiere Tags der Antwort A
-                        reply_tag = generate_reply_tag(reply_a_md)
-                        reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
-                        reply_tag_html = convert_markdown_to_html(reply_tag_md)
+                        # Logge die Daten
+                        data_dict = {
+                            "type": "reply_a",
+                            "content": reply_a_md,
+                            "model": reply_a_model,
+                            "price": reply_a_price,
+                            "words": reply_a_words
+                        }
+                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
+
+                        reply_a_tag = generate_reply_tag(reply_a_md)
+                        reply_a_tag_md = "*Tags: *" + reply_a_tag['completion']['choices'][0]['message']['content']
+                        reply_a_tag_html = convert_markdown_to_html(reply_a_tag_md)
 
                         # Generiere Parameter zu den Tags der Antwort A
-                        reply_a_tag_model = reply_tag['completion']['model']
-                        reply_a_tag_price = reply_tag['price']
-                        reply_a_tag_words = reply_tag['words']
+                        reply_a_tag_model = reply_a_tag['completion']['model']
+                        reply_a_tag_price = reply_a_tag['price']
+                        reply_a_tag_words = reply_a_tag['words']
+
+                        # Logge die Daten
+                        data_dict = {
+                            "type": "reply_a_tags",
+                            "content": reply_a_tag_md,
+                            "model": reply_a_tag_model,
+                            "price": reply_a_tag_price,
+                            "words": reply_a_tag_words
+                        }
+                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
 
                         yield json.dumps({'html': reply_a_html}) + '\n'
-                        yield json.dumps({'html': reply_tag_html}) + '\n'
+                        yield json.dumps({'html': reply_a_tag_html}) + '\n'
                         disc_stream += reply_a_md
 
                     else:
@@ -205,17 +261,37 @@ def ask():
                         reply_b_price = reply_b['price']
                         reply_b_words = reply_b['words']
 
-                        reply_tag = generate_reply_tag(reply_b_md)
-                        reply_tag_md = "*Tags: *" + reply_tag['completion']['choices'][0]['message']['content']
-                        reply_tag_html = convert_markdown_to_html(reply_tag_md)
+                        # Logge die Daten
+                        data_dict = {
+                            "type": "reply_b",
+                            "content": reply_b_md,
+                            "model": reply_b_model,
+                            "price": reply_b_price,
+                            "words": reply_b_words
+                        }
+                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
+
+                        reply_b_tag = generate_reply_tag(reply_b_md)
+                        reply_b_tag_md = "*Tags: *" + reply_b_tag['completion']['choices'][0]['message']['content']
+                        reply_b_tag_html = convert_markdown_to_html(reply_b_tag_md)
 
                         # Generiere Parameter zu den Tags der Antwort B
-                        reply_b_tag_model = reply_tag['completion']['model']
-                        reply_b_tag_price = reply_tag['price']
-                        reply_b_tag_words = reply_tag['words']
+                        reply_b_tag_model = reply_b_tag['completion']['model']
+                        reply_b_tag_price = reply_b_tag['price']
+                        reply_b_tag_words = reply_b_tag['words']
+
+                        # Logge die Daten
+                        data_dict = {
+                            "type": "reply_b_tags",
+                            "content": reply_b_tag_md,
+                            "model": reply_b_tag_model,
+                            "price": reply_b_tag_price,
+                            "words": reply_b_tag_words
+                        }
+                        update_log_json('../../log/llm_talk_log.json', id, data_dict)
 
                         yield json.dumps({'html': reply_b_html}) + '\n'
-                        yield json.dumps({'html': reply_tag_html}) + '\n'
+                        yield json.dumps({'html': reply_b_tag_html}) + '\n'
                         disc_stream += reply_b_md
 
                     # Wechsle die Runde
@@ -225,9 +301,6 @@ def ask():
             except GeneratorExit:
                 # Handle the client disconnecting
                 print("Client hat die Verbindung getrennt.")
-            finally:
-                # Logge die Daten, wenn die Schleife endet
-                log_to_json('../../log/llm_talk_log.json', id, frage, disc_stream)
 
         return Response(generate(), mimetype='text/plain')
 
