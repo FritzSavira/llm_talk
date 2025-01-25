@@ -28,7 +28,7 @@ COPY frontend/package.json ./
 
 # Cache löschen und dann installieren
 RUN npm cache clean --force
-RUN npm ci
+RUN npm install
 
 # Kopiere den Rest der Anwendung
 COPY . .
