@@ -12,6 +12,15 @@ RUN apt-get update && apt-get install -y build-essential curl
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
+# Kopieren der package.json und package-lock.json
+COPY package*.json ./
+
+# Installieren der Node.js-Abhängigkeiten
+RUN npm install
+
+# Build der Tailwind CSS
+RUN npm run build:css
+
 # Erstelle ein Verzeichnis für die Anwendung
 WORKDIR /app
 
