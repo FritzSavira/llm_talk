@@ -1,5 +1,5 @@
 # test_main.py
-from main import app
+from app import app
 
 
 def test_add():
