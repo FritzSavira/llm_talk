@@ -1,0 +1,28 @@
+app = "llm-talk"  # Name der App, ggf. anpassen
+
+[deploy]
+  release_command = ""
+
+[env]
+  # Hier können Sie Umgebungsvariablen setzen, die nicht geheim sind
+
+[[services]]
+  internal_port = 5000  # Port auf dem die App läuft
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80  # HTTP Port
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443  # HTTPS Port
+
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "5s"
+    method = "get"
+    path = "/"
+    protocol = "http"
+    timeout = 2000
+    tls_skip_verify = false
