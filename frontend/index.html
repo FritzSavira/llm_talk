@@ -2,47 +2,46 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Frage stellen</title>
-    <!-- Optional: Einfache Styling mit CSS -->
+    <title>KI Diskussion</title>
+    <!-- Tailwind CSS über CDN einbinden -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
+        /* Custom Scrollbar für bessere Ästhetik */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
         }
-        form {
-            margin-bottom: 20px;
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1;
         }
-        input[type="text"] {
-            width: 300px;
-            padding: 8px;
-            margin-right: 10px;
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
         }
-        button {
-            padding: 8px 16px;
-        }
-        #response {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-            max-width: 600px;
-            word-wrap: break-word;
-        }
-        .reply {
-            margin-bottom: 15px;
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
-<body>
-    <h1>Stellen Sie Ihre Frage</h1>
-    <form id="frageForm">
-        <label for="frage">Ihre Frage:</label><br><br>
-        <input type="text" id="frage" name="frage" required>
-        <button type="submit">Senden</button>
-    </form>
+<body class="bg-gray-100 flex flex-col h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow p-4">
+        <h1 class="text-2xl font-semibold text-gray-800">KI Diskussion</h1>
+    </header>
 
-    <div id="response"></div>
+    <!-- Chatverlauf -->
+    <main id="response" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+        <!-- Nachrichten werden hier dynamisch eingefügt -->
+    </main>
 
+    <!-- Eingabebereich -->
+    <footer class="bg-white p-4">
+        <form id="frageForm" class="flex items-center">
+            <input type="text" id="frage" name="frage" required placeholder="Stellen Sie eine Frage oder geben Sie ein Thema ein..." class="flex-1 p-3 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" class="p-3 bg-blue-500 text-white rounded-r hover:bg-blue-600">Senden</button>
+        </form>
+    </footer>
+
+    <!-- Script -->
     <script>
         document.getElementById('frageForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Verhindert das Standard-Formular-Absenden
@@ -55,9 +54,8 @@
                 return;
             }
 
-            // Leere den vorherigen Inhalt
-            const responseDiv = document.getElementById('response');
-            responseDiv.innerHTML = "";
+            // Füge die Nutzerfrage zum Chat hinzu
+            addMessage(frage, 'user');
 
             // AJAX-Anfrage an den Server senden
             fetch('/ask', {
@@ -91,11 +89,7 @@
                             if (line.trim()) {  // Nur nicht-leere Zeilen verarbeiten
                                 try {
                                     const dataObj = JSON.parse(line);
-                                    const replyElement = document.createElement('div');
-                                    replyElement.classList.add('reply');
-                                    replyElement.innerHTML = dataObj.html;
-                                    responseDiv.appendChild(replyElement);
-                                    replyElement.scrollIntoView({ behavior: 'smooth' });
+                                    addMessage(dataObj.html, 'ai');
                                 } catch (e) {
                                     console.error('Fehler beim Parsen von JSON:', e);
                                 }
@@ -110,12 +104,53 @@
             })
             .catch((error) => {
                 console.error('Es gab ein Problem mit der Fetch-Operation:', error);
-                responseDiv.innerHTML = "<span style='color: red;'>Fehler beim Senden der Frage.</span>";
+                addMessage("<span style='color: red;'>Fehler beim Senden der Frage.</span>", 'ai');
             });
         });
+
+        function addMessage(content, sender) {
+            const responseDiv = document.getElementById('response');
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('flex', 'items-start', 'space-x-4');
+
+            // Avatar
+            const avatar = document.createElement('div');
+            avatar.classList.add('flex-shrink-0');
+            if (sender === 'user') {
+                avatar.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">U</div>
+                `;
+            } else {
+                avatar.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">AI</div>
+                `;
+            }
+
+            // Nachricht
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('flex-1');
+            messageContent.innerHTML = `
+                <div class="bg-white p-4 rounded-lg shadow">
+                    ${content}
+                </div>
+            `;
+
+            // Anordnung je nach Sender
+            if (sender === 'user') {
+                messageWrapper.classList.add('justify-end', 'flex-row-reverse');
+                messageWrapper.appendChild(avatar);
+                messageWrapper.appendChild(messageContent);
+            } else {
+                messageWrapper.classList.add('justify-start');
+                messageWrapper.appendChild(avatar);
+                messageWrapper.appendChild(messageContent);
+            }
+
+            responseDiv.appendChild(messageWrapper);
+
+            // Scrollen zum neuesten Beitrag
+            responseDiv.scrollTop = responseDiv.scrollHeight;
+        }
     </script>
-
-
-
 </body>
 </html>
