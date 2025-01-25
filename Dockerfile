@@ -33,9 +33,6 @@ RUN npm install
 # Kopiere den Rest der Anwendung
 COPY . .
 
-# Build der Tailwind CSS
-RUN npm run build:css
-
 # Optional: Build-Schritte für das Frontend (falls verwendet)
 # RUN npm run build
 
@@ -43,4 +40,4 @@ RUN npm run build:css
 EXPOSE 5000
 
 # Definiere den Befehl zum Starten der Anwendung
-CMD ["python", "main.py"]
+CMD ["python", "app.py"]

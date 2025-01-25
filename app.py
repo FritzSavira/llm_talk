@@ -10,7 +10,7 @@ import random
 
 
 
-app = Flask(__name__, static_folder='static', template_folder='../../frontend')
+app = Flask(__name__, static_folder='static', template_folder='templates')
 straico_api_key = os.getenv('STRAICO_API_KEY')
 
 # Definiere erlaubte HTML-Tags und Attribute für die Sanitierung
