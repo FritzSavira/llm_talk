@@ -23,7 +23,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Kopiere zuerst die package.json
-COPY frontend/package.json ./
+COPY package.json ./
 #COPY frontend/package-lock.json ./ # falls vorhanden
 
 # Cache löschen und dann installieren
