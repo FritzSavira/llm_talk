@@ -22,19 +22,19 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+# Kopiere zuerst die package.json
+COPY frontend/package.json ./
+COPY frontend/package-lock.json ./ # falls vorhanden
+
 # Cache löschen und dann installieren
 RUN npm cache clean --force
-
-# Build der Tailwind CSS
-RUN npm run build:css
-
-# Kopiere die package.json und package-lock.json (falls vorhanden) und installiere JavaScript-Abhängigkeiten
-COPY frontend/package.json ./
-
 RUN npm ci
 
 # Kopiere den Rest der Anwendung
 COPY . .
+
+# Build der Tailwind CSS
+RUN npm run build:css
 
 # Optional: Build-Schritte für das Frontend (falls verwendet)
 # RUN npm run build

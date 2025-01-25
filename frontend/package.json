@@ -1,7 +1,7 @@
 {
-  "name": "ama_browser_frontend",
+  "name": "llm_talk_frontend",
   "version": "1.0.0",
-  "description": "Frontend für die ama_browser Anwendung",
+  "description": "Frontend für die llm_talk Anwendung",
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --mode development",
