@@ -12,12 +12,6 @@ RUN apt-get update && apt-get install -y build-essential curl
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
-# Kopieren der package.json und package-lock.json
-COPY package*.json ./
-
-# Installieren der Node.js-Abhängigkeiten
-RUN npm install
-
 # Build der Tailwind CSS
 RUN npm run build:css
 
@@ -29,9 +23,12 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+# Cache löschen und dann installieren
+RUN npm cache clean --force \
+
 # Kopiere die package.json und package-lock.json (falls vorhanden) und installiere JavaScript-Abhängigkeiten
 COPY frontend/package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 
 # Kopiere den Rest der Anwendung
 COPY . .
