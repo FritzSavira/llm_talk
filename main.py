@@ -131,7 +131,7 @@ def ask():
     frage = data.get('frage', '')
     disc_stream = ""
     id = generate_unique_id()
-    log_file = '../../log/llm_talk_log.json'
+    log_file = 'log/llm_talk_log.json'
 
 
     if frage:
