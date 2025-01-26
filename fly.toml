@@ -27,10 +27,10 @@ app = "llm-talk"  # Name der App, ggf. anpassen
     timeout = 2000
     tls_skip_verify = false
 
-[mounts]
+[[mounts]]
   source = "vol_v3y9j2xkxkexk1l4"
-  destination = "/data"
+  destination = "/pfad/zum/ersten/volume"
 
-  [[mounts]]
+[[mounts]]
   source = "vol_vw201x72jqo1ww8v"
-  destination = "/data"
+  destination = "/pfad/zum/zweiten/volume"
