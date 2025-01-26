@@ -29,8 +29,8 @@ app = "llm-talk"  # Name der App, ggf. anpassen
 
 [[mounts]]
   source = "vol_v3y9j2xkxkexk1l4"
-  destination = "/data"
+  destination = "ama_browser/data"
 
 [[mounts]]
   source = "vol_vw201x72jqo1ww8v"
-  destination = "/data"
+  destination = "ama_browser/data"
