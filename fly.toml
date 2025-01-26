@@ -28,9 +28,5 @@ app = "llm-talk"  # Name der App, ggf. anpassen
     tls_skip_verify = false
 
 [[mounts]]
-  source = "vol_4qp9w5zq7xdy1o8v"
-  destination = "/data"
-
-[[mounts]]
-  source = "vol_v88jy9zlqkow725v"
+  source = "llm_talk"
   destination = "/data"
