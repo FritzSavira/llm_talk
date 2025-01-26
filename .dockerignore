@@ -5,3 +5,4 @@ __pycache__
 .env
 *.git
 *.gitignore
+llm_talk_log.json
