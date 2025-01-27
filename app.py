@@ -228,7 +228,7 @@ def ask():
                         update_log_json(log_file, id, data_dict)
 
                         reply_a_tag = generate_reply_tag(reply_a_md)
-                        reply_a_tag_md = "*Tags: *" + reply_a_tag['completion']['choices'][0]['message']['content']
+                        reply_a_tag_md = reply_a_tag['completion']['choices'][0]['message']['content']
                         reply_a_tag_html = convert_markdown_to_html(reply_a_tag_md)
 
                         # Generiere Parameter zu den Tags der Antwort A
@@ -272,7 +272,7 @@ def ask():
                         update_log_json(log_file, id, data_dict)
 
                         reply_b_tag = generate_reply_tag(reply_b_md)
-                        reply_b_tag_md = "*Tags: *" + reply_b_tag['completion']['choices'][0]['message']['content']
+                        reply_b_tag_md = reply_b_tag['completion']['choices'][0]['message']['content']
                         reply_b_tag_html = convert_markdown_to_html(reply_b_tag_md)
 
                         # Generiere Parameter zu den Tags der Antwort B
