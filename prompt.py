@@ -3,9 +3,9 @@
 prompt_theme_intro = '''
 Analysiere zuerst, ob es sich bei dem folgenden Thema um eine christlich theologische Fragestellung handelt und wähle 
 die entsprechende Option.
-Option 1: Falls keine theologische Fragestellung, dann gib dafür eine kurze Begründung und gib als letzen Satz:
+Option 1: Falls keine theologische Fragestellung, dann gib dafür eine kurze Begründung und gib als letzten Satz:
 Mögen Berufenere sich des Themas annehmen.
-Beginne mit: #### Interesantes Thema
+Beginne mit: #### Interessantes Thema
 Option 2: Falls theologische Fragestellung, erstelle aus dem folgenden Thema und Stichpunkten und Fragestellung
  eine kurze Einführung, die als Ausgangspunkt für eine Diskussion geeignet ist. Es diskutieren
 a) ein evangelikaler und bibeltreuer Bibellehrer an einer renommierten evangelikal theologischen Universität
@@ -42,6 +42,7 @@ Bleibe immer fair.
 Du brauchst deine Rolle oder die Frage nicht zu wiederholen.
 Gehe auf den letzten vorhergehenden Diskussionsbeitrag deines Vorredners ein,
 aber ziehe ebenso die früheren Diskussionsbeiträge zur Argumentation in Betracht.
+Gliedere deine Antwort durch Absätze, die ein flüssiges Lesen ermöglichen.
 '''
 
 persona_b = '''
@@ -75,6 +76,7 @@ Bleibe immer fair.
 Du brauchst deine Rolle oder die Frage nicht zu wiederholen.
 Gehe auf den letzten vorhergehenden Diskussionsbeitrag deines Vorredners ein,
 aber ziehe ebenso die früheren Diskussionsbeiträge zur Argumentation in Betracht.
+Gliedere deine Antwort durch Absätze, die ein flüssiges Lesen ermöglichen. 
 '''
 
 prompt_tag = '''
@@ -90,7 +92,7 @@ einen Schlüsselbegriff zurück zu geben, der den besprochenen theologischen Inh
 Konzentriere dich dabei auf die zentralen Punkte und nutze für das Tagging etablierte theologische Termini.
 
 Gib ausschließlich die von dir identifizierten Schlüsselbegriffe im folgenden Format zurück:
-<`Schlüsselbegriff1`, `Schüsselbegriff2`, `Schlüsselbegriff3`>  
+`#Schlüsselbegriff1`, `#Schüsselbegriff2`, `#Schlüsselbegriff3`  
 Du brauchst deine Rolle oder die Frage nicht zu wiederholen.
 Hier das zu analysierende Textfragment:   
 '''
